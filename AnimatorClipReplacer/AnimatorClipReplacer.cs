@@ -4,6 +4,12 @@ using UnityEditor.Animations;
 using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// Animator Clip 替換工具
+/// 此工具用來替換 Animator Controller 中的 Animation Clips，
+/// 以便快速更新動畫資源，特別是當 FBX 動畫前綴發生變化時。
+/// 用戶可以指定新的 FBX 資源，並自定義原始和新動畫的前綴。
+/// </summary>
 public class AnimatorClipReplacer : EditorWindow
 {
     private AnimatorController animatorController;
@@ -55,7 +61,7 @@ public class AnimatorClipReplacer : EditorWindow
         // 從 FBX 中獲取 AnimationClips
         var clips = new List<AnimationClip>();
         var animationClips = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(newFbx)).OfType<AnimationClip>().ToArray();
-        
+
         // 使用字典存儲新的動畫 clip，並使用新的前綴命名
         var newClips = new Dictionary<string, AnimationClip>();
         foreach (var clip in animationClips)

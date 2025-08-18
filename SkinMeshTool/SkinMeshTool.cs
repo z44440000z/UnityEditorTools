@@ -2,22 +2,15 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[ExecuteInEditMode]
-public class SkinMeshTool : MonoBehaviour
+public static class SkinMeshTool
 {
-    [Tooltip("用作參考的SkinnedMesh(身體)")]
-    public SkinnedMeshRenderer originalSkinnedMesh;
-    [Tooltip("要替換骨架的SkinnedMesh(配件)")]
-    public SkinnedMeshRenderer newSkinnedMesh;
-
-    public void Replace()
+    public static void Replace(SkinnedMeshRenderer originalSkinnedMesh, SkinnedMeshRenderer newSkinnedMesh)
     {
         if (originalSkinnedMesh == null || newSkinnedMesh == null)
         {
             Debug.LogError("請指定身體和配件的SkinnedMeshRenderer");
             return;
         }
-        // 確保原始SkinnedMeshRenderer的骨頭數量與新SkinnedMeshRenderer的骨頭數量一致
         if (originalSkinnedMesh.bones.Length != newSkinnedMesh.bones.Length)
         {
             Debug.LogError("原始和新SkinnedMeshRenderer的骨頭數量不一致，無法替換骨架。");
@@ -28,7 +21,7 @@ public class SkinMeshTool : MonoBehaviour
         Debug.Log("已替換骨架");
     }
 
-    public void Sort()
+    public static void Sort(SkinnedMeshRenderer originalSkinnedMesh, SkinnedMeshRenderer newSkinnedMesh)
     {
         Transform[] A = originalSkinnedMesh.bones;
         Transform[] B = newSkinnedMesh.bones;
@@ -36,27 +29,22 @@ public class SkinMeshTool : MonoBehaviour
         bool sameBones = AlignAndCheckTransforms(ref A, ref B);
 
         if (sameBones)
-        {
             Debug.Log("兩個骨架內容一致，已對齊順序。");
-        }
         else
-        {
             Debug.LogWarning("兩個骨架有差異，已嘗試對齊順序。");
-        }
+
+        newSkinnedMesh.bones = B; // 把排序後的骨架套回去
     }
 
-    bool AlignAndCheckTransforms(ref Transform[] A, ref Transform[] B)
+    private static bool AlignAndCheckTransforms(ref Transform[] A, ref Transform[] B)
     {
-        // 檢查長度是否一致
         if (A.Length != B.Length)
         {
             Debug.LogWarning("陣列長度不同");
             return false;
         }
 
-        // 建立一個 name -> Transform 的字典來快速查找
         Dictionary<string, Transform> bDict = B.ToDictionary(b => b.name, b => b);
-
         List<Transform> alignedB = new List<Transform>();
         bool allMatch = true;
 
@@ -70,16 +58,16 @@ public class SkinMeshTool : MonoBehaviour
             {
                 Debug.LogWarning($"找不到對應骨頭: {aBone.name}");
                 allMatch = false;
-                alignedB.Add(null); // 保留位子，避免出錯
+                alignedB.Add(null);
             }
         }
 
-        B = alignedB.ToArray(); // 更新 B 順序為 A 一致
+        B = alignedB.ToArray();
         return allMatch;
     }
 
     // 遞歸方法：根據名稱在新的骨架中查找對應的骨頭
-    private Transform FindBoneByName(Transform root, string boneName)
+    private static Transform FindBoneByName(Transform root, string boneName)
     {
         // 如果當前骨頭名稱匹配，返回該骨頭
         if (root.name == boneName)

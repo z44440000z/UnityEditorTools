@@ -14,6 +14,7 @@ public class BuildTimestampRecorder : IPreprocessBuildWithReport
     private const string DestFilename = "BuildTimestamp.asset";
 
     public int callbackOrder => 0;
+    public static Action onBuild;
 
     public void OnPreprocessBuild(BuildReport report)
     {
@@ -30,7 +31,7 @@ public class BuildTimestampRecorder : IPreprocessBuildWithReport
             AssetDatabase.CreateAsset(buildTimestamp, $"{DestDirPath}/{DestFilename}");
         }
 
-        DateTime dateTime = TimeZoneInfo.ConvertTimeFromUtc(report.summary.buildStartedAt, TimeZoneInfo.Utc);
+        DateTime dateTime = TimeZoneInfo.ConvertTimeFromUtc(report.summary.buildStartedAt, TimeZoneInfo.Local);
 
         buildTimestamp.UtcYear = dateTime.Year;
         buildTimestamp.UtcMonth = dateTime.Month;
@@ -38,6 +39,8 @@ public class BuildTimestampRecorder : IPreprocessBuildWithReport
         buildTimestamp.UtcHour = dateTime.Hour;
         buildTimestamp.UtcMinute = dateTime.Minute;
         buildTimestamp.UtcSecond = dateTime.Second;
+
+        onBuild.Invoke();
 
         EditorUtility.SetDirty(buildTimestamp);
         AssetDatabase.SaveAssets();
